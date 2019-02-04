@@ -1,5 +1,5 @@
 # cfm
-curses based file manager completely written in c
+curses based minimal file manager written in c 
 
 # screenshots
 
