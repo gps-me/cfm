@@ -8,9 +8,15 @@ bool is_file(char* path) {
 }
 
 void readLine(char* buff, int n) {
-    int i = 0; char c;
+    int i = 0;
     buff[i] = getch();
     while (i<n-1 && buff[i]!='\n') 
         buff[++i] = getch();
     buff[i] = 0;
+}
+
+char* allocAndCopy(const char* s){
+    char* ret = (char*) malloc(strlen(s)*sizeof(char));
+    strcpy(ret, s);
+    return ret;
 }

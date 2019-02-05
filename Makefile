@@ -7,5 +7,5 @@ SRC=$(wildcard *.c)
 cfm: cfm.c config.h utils.h
 	$(CC) $(CCFLAGS) $(SRC) $(LDFLAGS) -o $(EXEC)
 
-clean: 
+clean:
 	rm -rf $(EXEC)
