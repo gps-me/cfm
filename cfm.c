@@ -25,6 +25,7 @@
 
 #define MAX_PATH_LENGTH 256
 #define MAX_ENTRY 128
+#define MAX_BUFFER 256
 
 int MAX_Y, MAX_X, PEG=0, TOTAL;
 char CWD[MAX_PATH_LENGTH], PEG_ENTRY[MAX_ENTRY];
@@ -111,7 +112,7 @@ initCurses(){
 
 bool
 handleInput(){
-	int n; char buff[MAX_ENTRY],ch;
+	int n; char buff[MAX_BUFFER],ch;
 	switch(getch()){
 		// navigation controls
 		case KEY_DOWN: PEG=(PEG+1)%TOTAL; return true;
@@ -119,7 +120,7 @@ handleInput(){
 		case KEY_ENTER:
 		case KEY_RIGHT: // goto highlighted entry or open file
 			if(is_file(PEG_ENTRY)){
-				char comm[MAX_ENTRY]; 
+				char comm[MAX_BUFFER]; 
 				sprintf(comm,"xdg-open \"%s\" > /dev/null",PEG_ENTRY);
 				system(comm); // TODO run this using fork
 			}
