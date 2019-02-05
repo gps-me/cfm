@@ -25,3 +25,6 @@ curses based minimal file manager written in c
 
 # todo
 + selection mode
+
+# contribute
++ Please follow https://suckless.org/coding_style/
