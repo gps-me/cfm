@@ -68,6 +68,7 @@ defSort(const struct dirent** file1, const struct dirent** file2) {
 /* filter filenames */
 int
 filterNames(const struct dirent* file) {
+	if (!strcmp(file->d_name, ".") || !strcmp(file->d_name, "..")) return 0;
 	if (SHOW_HIDDEN || file->d_name[0]!='.') return 1;
 	return 0;
 }
@@ -226,7 +227,7 @@ handleInput() {
 			}
 			break;
 
-		case 'x': case 'c': /* cut or fCopy */
+		case 'x': case 'c': /* cut or copy */
 			strcpy(task_path, CWD); strcat(task_path, "/"); strcat(task_path, PEG_ENTRY_NAME);
 			strcpy(task_dest_name, PEG_ENTRY_NAME);
 			addTask(task_path, task_dest_name, (c=='x'?CUT:COPY));
