@@ -32,6 +32,8 @@ static void redraw();
 static void resizeHandler(int);
 static void initCurses();
 static void addTask(const char*, const char*, action);
+static void fCopy(const char*, const char*);
+static void fMove(const char*, const char*);
 static void performTasks();
 static bool handleInput();
 
@@ -95,7 +97,7 @@ ls(const char* path) {
 /* redraws the frame */
 void
 redraw() {
-	clear();
+	erase();
 	move(0, 0); addstr(CWD);
 	move(2, 0); ls(CWD);
 	refresh();
@@ -136,17 +138,36 @@ addTask(const char* path, const char* destName, action act) {
 	TOTAL_TASKS++;
 }
 
+/* copy file or dir */
+void
+fCopy(const char* from, const char* to) {
+	char comm[MAX_BUFFER];
+	strcpy(comm, "cp -fr \"");
+	strcat(comm, from); strcat(comm, "\" \"");
+	strcat(comm, to); strcat(comm, "\"");
+	system(comm);
+}
+
+/* move file or dir */
+void
+fMove(const char* from, const char* to) {
+	char comm[MAX_BUFFER];
+	strcpy(comm, "mv -f \"");
+	strcat(comm, from); strcat(comm, "\" \"");
+	strcat(comm, to); strcat(comm, "\"");
+	system(comm);
+}
+
 /* perform all tasks in task buffer and empty it */
 void
 performTasks() {
-	char comm[MAX_BUFFER]; int i=-1;
+	int i=-1;
 	while (++i<TOTAL_TASKS) {
-		strcpy(comm, (TASK_QUEUE[i].act==COPY?"cp -fr \"":"mv -f \""));
-		strcat(comm, TASK_QUEUE[i].path);
-		strcat(comm, "\" \"");
-		strcat(comm, TASK_QUEUE[i].destName);
-		strcat(comm, "\"");
-		system(comm);
+		switch (TASK_QUEUE[i].act) {
+			case COPY: fCopy(TASK_QUEUE[i].path, TASK_QUEUE[i].destName); break;
+			case CUT: fMove(TASK_QUEUE[i].path, TASK_QUEUE[i].destName); break;
+			default: break;
+		}
 		free(TASK_QUEUE[i].path);
 		free(TASK_QUEUE[i].destName);
 	}
@@ -164,8 +185,8 @@ handleInput() {
 		/* navigation controls */
 		case KEY_DOWN: PEG=(PEG+1)%TOTAL_ENTRY; break;
 		case KEY_UP: PEG=(PEG==0?TOTAL_ENTRY-1:PEG-1); break;
-		case KEY_ENTER: 
-		case KEY_RIGHT:
+		
+		case KEY_ENTER: case KEY_RIGHT: /* open or goto pegged entry */
 			if (is_file(PEG_ENTRY_NAME)) {
 				char comm[MAX_BUFFER]; 
 				sprintf(comm, "xdg-open \"%s\" > /dev/null", PEG_ENTRY_NAME);
@@ -177,24 +198,23 @@ handleInput() {
 				PEG=0; chdir(CWD);
 			}
 			break;
-		case KEY_LEFT:
+
+		case KEY_LEFT: /* goto parent directory */
 			n = strlen(CWD)-1;
 			while(n>1 && CWD[n]!='/') n--; 
 			if (n>=1) { CWD[n]=PEG=0; chdir(CWD); }
 			break;
 		
-		/* delete and create */
-		case 'd':
+		case 'd': /* delete */
 			sprintf(buff, "Delete %s (y/n)?", PEG_ENTRY_NAME);
 			move(MAX_Y-1, 0); addstr(buff); 
 			c = getch();
 			if (c=='y' || c=='Y') { remove(PEG_ENTRY_NAME); }
 			break;
-		case 'n':
-			curs_set(1); echo();
+		
+		case 'n': /* create file or dir */
 			move(MAX_Y-1, 0); addstr("name: ");
 			readLine(buff, MAX_BUFFER);
-			curs_set(0); noecho();
 			redraw();
 			move(MAX_Y-1, 0); addstr("Enter 'f' for file and 'd' for dir");
 			c = getch();
@@ -206,22 +226,24 @@ handleInput() {
 			}
 			break;
 
-		/* cut, copy, paste */
-		case 'x':
-		case 'c':
+		case 'x': case 'c': /* cut or fCopy */
 			strcpy(task_path, CWD); strcat(task_path, "/"); strcat(task_path, PEG_ENTRY_NAME);
 			strcpy(task_dest_name, PEG_ENTRY_NAME);
 			addTask(task_path, task_dest_name, (c=='x'?CUT:COPY));
-			sprintf(buff, "Added %s", PEG_ENTRY_NAME);
-			break;
-		case 'v':
-		case 'p':
-			performTasks(); 
-			move(MAX_Y-1, 0); addstr("Paste done!"); refresh();
 			break;
 		
+		case 'v': case 'p': /* paste */
+			performTasks();
+			break;
+
+		case 'r': /* rename */
+			move(MAX_Y-1, 0); addstr("Enter new name: ");
+			readLine(buff, MAX_BUFFER);
+			fMove(PEG_ENTRY_NAME, buff);
+			break;
+
 		case '.': SHOW_HIDDEN=!SHOW_HIDDEN; break;
-		case 'q': return false; 
+		case 'q': return false;
 	}
 	return true;
 }

@@ -3,7 +3,7 @@ curses based minimal file manager written in c
 
 # features
 + simple navigation using arrow keys
-+ basic operations like delete, create, cut, copy, paste
++ basic operations like delete, create, cut, copy, paste, rename
 + show hidden files and directories
 
 # screenshots
@@ -23,6 +23,7 @@ curses based minimal file manager written in c
 + x - cut current entry
 + c - copy current entry
 + v or p - paste all the files in task buffer
++ r - rename
 
 # todo
 + selection mode

@@ -8,11 +8,15 @@ bool is_file(char* path) {
 }
 
 void readLine(char* buff, int n) {
-    int i = 0;
+    int i=0;
+    curs_set(1);
+    nocbreak(); echo();
     buff[i] = getch();
     while (i<n-1 && buff[i]!='\n') 
         buff[++i] = getch();
     buff[i] = 0;
+    noecho(); cbreak();
+    curs_set(0);
 }
 
 char* allocAndCopy(const char* s){
